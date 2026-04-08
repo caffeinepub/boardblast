@@ -1,0 +1,285 @@
+type UpgradeLevel = nat;
+type TurnPhaseView = 
+ variant {
+   auction: AuctionStateView;
+   endTurn;
+   landAndAct;
+   move;
+   roll;
+ };
+type TradeStatus = 
+ variant {
+   accepted;
+   cancelled;
+   declined;
+   pending;
+ };
+type TradeOfferView = 
+ record {
+   createdAt: Timestamp;
+   id: nat;
+   proposerId: PlayerId;
+   proposerMoney: Money;
+   proposerSpaces: vec SpaceId;
+   recipientId: PlayerId;
+   recipientMoney: Money;
+   recipientSpaces: vec SpaceId;
+   status: TradeStatus;
+ };
+type Timestamp = int;
+type SpaceId = nat;
+type PropertyDeed = 
+ record {
+   colorGroup: ColorGroup;
+   housePrice: Money;
+   mortgageValue: Money;
+   name: text;
+   purchasePrice: Money;
+   rentBase: Money;
+   rentHotel: Money;
+   rentHouse1: Money;
+   rentHouse2: Money;
+   rentHouse3: Money;
+   rentHouse4: Money;
+   spaceId: SpaceId;
+ };
+type PlayerStateView = 
+ record {
+   avatarId: AvatarId;
+   balance: Money;
+   getOutOfJailCards: nat;
+   id: PlayerId;
+   isBankrupt: bool;
+   jailStatus: JailStatus;
+   lastSeenAt: Timestamp;
+   ownedSpaces: vec SpaceId;
+   position: BoardPosition;
+   username: text;
+ };
+type PlayerId = principal;
+type OwnedPropertyView = 
+ record {
+   deed: PropertyDeed;
+   isMortgaged: bool;
+   ownerId: PlayerId;
+   spaceId: SpaceId;
+   upgradeLevel: UpgradeLevel;
+ };
+type Money = int;
+type LobbyView = 
+ record {
+   code: LobbyCode;
+   createdAt: Timestamp;
+   gameId: opt GameId;
+   hostId: PlayerId;
+   maxPlayers: nat;
+   players: vec LobbyPlayer;
+   status: LobbyStatus;
+ };
+type LobbyStatus = 
+ variant {
+   finished;
+   inProgress;
+   starting;
+   waiting;
+ };
+type LobbyPlayer = 
+ record {
+   avatarId: AvatarId;
+   id: PlayerId;
+   isHost: bool;
+   isReady: bool;
+   joinedAt: Timestamp;
+   username: text;
+ };
+type LobbyError = 
+ variant {
+   alreadyInLobby;
+   lobbyAlreadyStarted;
+   lobbyFull;
+   lobbyNotFound;
+   notHost;
+   notInLobby;
+   tooFewPlayers;
+ };
+type LobbyCode = text;
+type JailStatus = 
+ variant {
+   inJail: record {
+             hasGetOutCard: bool;
+             turnsRemaining: nat;
+           };
+   notInJail;
+ };
+type GameStatus = 
+ variant {
+   active;
+   finished: record {winnerId: PlayerId;};
+ };
+type GameSessionView = 
+ record {
+   currentPlayerIndex: nat;
+   id: GameId;
+   lastDiceRoll: opt DiceRoll;
+   lobbyCode: LobbyCode;
+   ownedProperties: vec OwnedPropertyView;
+   pendingTrade: opt TradeOfferView;
+   players: vec PlayerStateView;
+   startedAt: Timestamp;
+   status: GameStatus;
+   turnPhase: TurnPhaseView;
+   updatedAt: Timestamp;
+ };
+type GameId = text;
+type GameError = 
+ variant {
+   alreadyBankrupt;
+   alreadyMortgaged;
+   gameNotFound;
+   insufficientFunds;
+   invalidBid;
+   invalidPhase;
+   maxUpgradeReached;
+   notInJail;
+   notMortgaged;
+   notTradeParticipant;
+   notYourTurn;
+   playerNotFound;
+   propertyAlreadyOwned;
+   propertyNotOwned;
+   tradeNotFound;
+ };
+type DiceRoll = 
+ record {
+   die1: nat;
+   die2: nat;
+ };
+type ColorGroup = 
+ variant {
+   brown;
+   darkBlue;
+   green;
+   lightBlue;
+   orange;
+   pink;
+   railroad;
+   red;
+   utility;
+   yellow;
+ };
+type BoardPosition = nat;
+type AvatarId = nat;
+type AuctionStateView = 
+ record {
+   bids: vec AuctionBid;
+   isOpen: bool;
+   spaceId: SpaceId;
+   startedAt: Timestamp;
+ };
+type AuctionBid = 
+ record {
+   amount: Money;
+   bidderId: PlayerId;
+   placedAt: Timestamp;
+ };
+service : {
+  acceptTrade: (gameId: GameId, tradeId: nat) ->
+   (variant {
+      err: GameError;
+      ok: GameSessionView;
+    });
+  buyProperty: (gameId: GameId, spaceId: SpaceId) ->
+   (variant {
+      err: GameError;
+      ok: GameSessionView;
+    });
+  createLobby: (username: text, avatarId: AvatarId, maxPlayers: nat) ->
+   (variant {
+      err: LobbyError;
+      ok: LobbyView;
+    });
+  declineTrade: (gameId: GameId, tradeId: nat) ->
+   (variant {
+      err: GameError;
+      ok: GameSessionView;
+    });
+  endTurn: (gameId: GameId) ->
+   (variant {
+      err: GameError;
+      ok: GameSessionView;
+    });
+  getGame: (gameId: GameId) -> (opt GameSessionView) query;
+  getLobby: (code: LobbyCode) -> (opt LobbyView) query;
+  heartbeat: (gameId: GameId) -> ();
+  joinLobby: (code: LobbyCode, username: text, avatarId: AvatarId) ->
+   (variant {
+      err: LobbyError;
+      ok: LobbyView;
+    });
+  leaveLobby: (code: LobbyCode) -> (variant {
+                                      err: LobbyError;
+                                      ok;
+                                    });
+  mortgageProperty: (gameId: GameId, spaceId: SpaceId) ->
+   (variant {
+      err: GameError;
+      ok: GameSessionView;
+    });
+  passOnProperty: (gameId: GameId, spaceId: SpaceId) ->
+   (variant {
+      err: GameError;
+      ok: GameSessionView;
+    });
+  payJailFine: (gameId: GameId) ->
+   (variant {
+      err: GameError;
+      ok: GameSessionView;
+    });
+  placeBid: (gameId: GameId, amount: Money) ->
+   (variant {
+      err: GameError;
+      ok: GameSessionView;
+    });
+  proposeTrade: (gameId: GameId, recipientId: PlayerId, proposerSpaces:
+   vec SpaceId, proposerMoney: Money, recipientSpaces: vec SpaceId,
+   recipientMoney: Money) -> (variant {
+                                err: GameError;
+                                ok: GameSessionView;
+                              });
+  reconnect: () -> (opt GameSessionView) query;
+  resolveAuction: (gameId: GameId) ->
+   (variant {
+      err: GameError;
+      ok: GameSessionView;
+    });
+  rollAndMove: (gameId: GameId) ->
+   (variant {
+      err: GameError;
+      ok: GameSessionView;
+    });
+  setReady: (code: LobbyCode, ready: bool) ->
+   (variant {
+      err: LobbyError;
+      ok: LobbyView;
+    });
+  startGame: (code: LobbyCode) ->
+   (variant {
+      err: LobbyError;
+      ok: GameSessionView;
+    });
+  unmortgageProperty: (gameId: GameId, spaceId: SpaceId) ->
+   (variant {
+      err: GameError;
+      ok: GameSessionView;
+    });
+  upgradeProperty: (gameId: GameId, spaceId: SpaceId) ->
+   (variant {
+      err: GameError;
+      ok: GameSessionView;
+    });
+  useGetOutOfJailCard: (gameId: GameId) ->
+   (variant {
+      err: GameError;
+      ok: GameSessionView;
+    });
+}

@@ -1,0 +1,188 @@
+// Version: 1.0.0
+type AuctionBid__582899395 =
+  {
+    amount : Money__114107293;
+    bidderId : PlayerId__148112352;
+    placedAt : Timestamp__344692241
+  };
+type AuctionState__325253130 =
+  {
+    var bids : [AuctionBid__582899395];
+    var isOpen : Bool;
+    spaceId : SpaceId__116895490;
+    startedAt : Timestamp__344692241
+  };
+type AvatarId__1008881168 = Nat;
+type BoardPosition__878545906 = Nat;
+type BoardPosition__949896073 = BoardPosition__878545906;
+type BoardSpace__839658035 =
+  {id : SpaceId__116895490; name : Text; spaceType : SpaceType__288430276};
+type CardEffect__854254738 =
+  {
+    #collectFromPlayers : Money__114107293;
+    #collectMoney : Money__114107293;
+    #getOutOfJailFree;
+    #goToJail;
+    #moveSpaces : Int;
+    #moveToSpace : SpaceId__116895490;
+    #payMoney : Money__114107293;
+    #payPerHouse : Money__114107293
+  };
+type Card__220579759 =
+  {description : Text; effect : CardEffect__854254738; id : Nat};
+type ColorGroup__1014741476 =
+  {
+    #brown;
+    #darkBlue;
+    #green;
+    #lightBlue;
+    #orange;
+    #pink;
+    #railroad;
+    #red;
+    #utility;
+    #yellow
+  };
+type Data__791452850<K, V> =
+  {var count : Nat__490723111; kvs : [var ?(K, V)]};
+type DiceRoll__23041167 = {die1 : Nat; die2 : Nat};
+type GameId__19649021 = GameId__669134594;
+type GameId__669134594 = Text;
+type GameSession__348748755 =
+  {
+    var chanceCards : [Card__220579759];
+    var communityChestCards : [Card__220579759];
+    var currentPlayerIndex : Nat;
+    id : GameId__19649021;
+    var lastDiceRoll : ?DiceRoll__23041167;
+    lobbyCode : LobbyCode__686267472;
+    var nextTradeId : Nat;
+    var ownedProperties : [OwnedProperty__220914150];
+    var pendingTrade : ?TradeOffer__974776900;
+    var players : [PlayerState__889469012];
+    startedAt : Timestamp__344692241;
+    var status : GameStatus__639708100;
+    var turnPhase : TurnPhase__176793901;
+    var updatedAt : Timestamp__344692241
+  };
+type GameStatus__639708100 =
+  {#active; #finished : {winnerId : PlayerId__148112352}};
+type Internal__8484328<K, V> =
+  {children : [var ?Node__46230540<K, V>]; data : Data__791452850<K, V>};
+type JailStatus__213628269 =
+  {#inJail : {hasGetOutCard : Bool; turnsRemaining : Nat}; #notInJail};
+type Leaf__809889148<K, V> = {data : Data__791452850<K, V>};
+type LobbyCode__686267472 = LobbyCode__777218655;
+type LobbyCode__777218655 = Text;
+type LobbyPlayer__636742472 =
+  {
+    avatarId : AvatarId__1008881168;
+    id : PlayerId__148112352;
+    isHost : Bool;
+    isReady : Bool;
+    joinedAt : Timestamp__344692241;
+    username : Text
+  };
+type LobbyStatus__728064187 = {#finished; #inProgress; #starting; #waiting};
+type Lobby__476982630 =
+  {
+    code : LobbyCode__686267472;
+    createdAt : Timestamp__344692241;
+    var gameId : ?GameId__19649021;
+    hostId : PlayerId__148112352;
+    var maxPlayers : Nat;
+    var players : [LobbyPlayer__636742472];
+    var status : LobbyStatus__728064187
+  };
+type Money__114107293 = Money__698460738;
+type Money__698460738 = Int;
+type Nat__490723111 = Nat__920180692;
+type Nat__920180692 = Nat;
+type Node__46230540<K, V> =
+  {#internal : Internal__8484328<K, V>; #leaf : Leaf__809889148<K, V>};
+type OwnedProperty__220914150 =
+  {
+    deed : PropertyDeed__40092712;
+    var isMortgaged : Bool;
+    ownerId : PlayerId__148112352;
+    var upgradeLevel : UpgradeLevel__722198621
+  };
+type PlayerId__148112352 = PlayerId__52807076;
+type PlayerId__52807076 = Principal;
+type PlayerState__889469012 =
+  {
+    avatarId : AvatarId__1008881168;
+    var balance : Money__114107293;
+    var getOutOfJailCards : Nat;
+    id : PlayerId__148112352;
+    var isBankrupt : Bool;
+    var jailStatus : JailStatus__213628269;
+    var lastSeenAt : Timestamp__344692241;
+    var ownedSpaces : [SpaceId__116895490];
+    var position : BoardPosition__949896073;
+    username : Text
+  };
+type PropertyDeed__40092712 =
+  {
+    colorGroup : ColorGroup__1014741476;
+    housePrice : Money__114107293;
+    mortgageValue : Money__114107293;
+    name : Text;
+    purchasePrice : Money__114107293;
+    rentBase : Money__114107293;
+    rentHotel : Money__114107293;
+    rentHouse1 : Money__114107293;
+    rentHouse2 : Money__114107293;
+    rentHouse3 : Money__114107293;
+    rentHouse4 : Money__114107293;
+    spaceId : SpaceId__116895490
+  };
+type SpaceId__116895490 = SpaceId__290603813;
+type SpaceId__290603813 = Nat;
+type SpaceType__288430276 =
+  {
+    #chance;
+    #communityChest;
+    #freeParking;
+    #go;
+    #goToJail;
+    #incomeTax;
+    #jail;
+    #luxuryTax;
+    #property : PropertyDeed__40092712;
+    #railroad : PropertyDeed__40092712;
+    #utility : PropertyDeed__40092712
+  };
+type Timestamp__301639476 = Int;
+type Timestamp__344692241 = Timestamp__301639476;
+type TradeOffer__974776900 =
+  {
+    createdAt : Timestamp__344692241;
+    id : Nat;
+    proposerId : PlayerId__148112352;
+    proposerMoney : Money__114107293;
+    proposerSpaces : [SpaceId__116895490];
+    recipientId : PlayerId__148112352;
+    recipientMoney : Money__114107293;
+    recipientSpaces : [SpaceId__116895490];
+    var status : TradeStatus__164637056
+  };
+type TradeStatus__164637056 = {#accepted; #cancelled; #declined; #pending};
+type TurnPhase__176793901 =
+  {#auction : AuctionState__325253130; #endTurn; #landAndAct; #move; #roll};
+type UpgradeLevel__722198621 = Nat;
+actor {
+  stable var _gameCounter : Nat;
+  stable var _seedCounter : Nat;
+  stable board : [BoardSpace__839658035];
+  stable games :
+    {
+      var root : Node__46230540<GameId__19649021, GameSession__348748755>;
+      var size : Nat__490723111
+    };
+  stable lobbies :
+    {
+      var root : Node__46230540<LobbyCode__686267472, Lobby__476982630>;
+      var size : Nat__490723111
+    }
+};

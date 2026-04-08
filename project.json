@@ -1,0 +1,23 @@
+{
+  "overview": "A fully playable, cartoony Monopoly-inspired online board game for 2–8 players featuring animated tokens, dice rolls, property management, auctions, jail mechanics, and vibrant Candyland-style visuals.",
+  "features": [
+    "Lobby system with up to 8 players",
+    "Animated dice rolls and token movement",
+    "40-space cartoony game board",
+    "Property buying, rent, and auctions",
+    "Jail mechanics and card draws",
+    "Automated banker with live balance tracking",
+    "Trade UI between players",
+    "Bankruptcy detection and game-end screen"
+  ],
+  "category": "games",
+  "tags": [
+    "board-game",
+    "multiplayer",
+    "monopoly",
+    "animated",
+    "cartoon",
+    "online"
+  ],
+  "last_updated": "2026-04-08T00:30:38.507Z"
+}
