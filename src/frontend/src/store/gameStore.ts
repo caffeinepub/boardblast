@@ -51,7 +51,8 @@ export const useGameStore = create<GameStore>((set) => ({
   myPlayerId: null,
   uiState: defaultUIState,
 
-  setGameSession: (session) => set({ gameSession: session }),
+  setGameSession: (session) =>
+    set({ gameSession: session, ...(session ? { lobbyState: null } : {}) }),
   setLobbyState: (lobby) => set({ lobbyState: lobby }),
   setMyPlayerId: (id) => set({ myPlayerId: id }),
 

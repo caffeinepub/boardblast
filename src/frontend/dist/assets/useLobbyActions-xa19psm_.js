@@ -1,46 +1,32 @@
-import { useActor } from "@caffeineai/core-infrastructure";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
-import { toast } from "sonner";
-import { createActor } from "../backend";
-import { useGameStore } from "../store/gameStore";
-import type { AvatarId, LobbyCode } from "../types/game";
-
+import { b as useNavigate, c as useQueryClient, a as ue } from "./index-xRF9tkV2.js";
+import { u as useMutation, a as useActor, c as createActor } from "./backend-BxTSFiBD.js";
+import { u as useGameStore } from "./gameStore-EujuzfF-.js";
 function useActorInstance() {
   return useActor(createActor);
 }
-
-/** Maps raw Motoko enum error names to friendly, actionable messages. */
-function friendlyLobbyError(raw: string): string {
-  const map: Record<string, string> = {
+function friendlyLobbyError(raw) {
+  const map = {
     alreadyInLobby: "You're already in a lobby. Reconnecting you now…",
     lobbyNotFound: "Lobby not found. Double-check the code and try again.",
     lobbyFull: "This lobby is full — try another game or create your own.",
-    lobbyAlreadyStarted:
-      "This game has already started and can't accept new players.",
+    lobbyAlreadyStarted: "This game has already started and can't accept new players.",
     notInLobby: "You're not in this lobby.",
     notEnoughPlayers: "Not enough players to start. Need at least 2.",
     alreadyReady: "You're already marked as ready.",
     notHost: "Only the host can start the game.",
-    gameAlreadyExists: "A game session already exists for this lobby.",
+    gameAlreadyExists: "A game session already exists for this lobby."
   };
   return map[raw] ?? `Something went wrong (${raw}). Please try again.`;
 }
-
-export function useCreateLobby() {
+function useCreateLobby() {
   const { actor } = useActorInstance();
   const navigate = useNavigate();
   const { setLobbyState } = useGameStore();
-
   return useMutation({
     mutationFn: async ({
       username,
       avatarId,
-      maxPlayers,
-    }: {
-      username: string;
-      avatarId: AvatarId;
-      maxPlayers: bigint;
+      maxPlayers
     }) => {
       if (!actor) throw new Error("Not connected");
       const result = await actor.createLobby(username, avatarId, maxPlayers);
@@ -50,71 +36,55 @@ export function useCreateLobby() {
     onSuccess: (lobby) => {
       setLobbyState(lobby);
       navigate({ to: "/lobby/$code", params: { code: lobby.code } });
-      toast.success(`🎉 Lobby created! Code: ${lobby.code}`);
+      ue.success(`🎉 Lobby created! Code: ${lobby.code}`);
     },
-    onError: (err: Error) => {
-      toast.error(friendlyLobbyError(err.message));
-    },
+    onError: (err) => {
+      ue.error(friendlyLobbyError(err.message));
+    }
   });
 }
-
-export function useJoinLobby() {
+function useJoinLobby() {
   const { actor } = useActorInstance();
   const navigate = useNavigate();
   const { setLobbyState } = useGameStore();
-
   return useMutation({
     mutationFn: async ({
       code,
       username,
-      avatarId,
-    }: {
-      code: LobbyCode;
-      username: string;
-      avatarId: AvatarId;
+      avatarId
     }) => {
       if (!actor) throw new Error("Not connected");
-
       const result = await actor.joinLobby(code, username, avatarId);
-
-      // Auto-recover: if backend says we're already in a lobby, silently leave
-      // that stale session and retry the join once.
       if (result.__kind__ === "err" && result.err === "alreadyInLobby") {
-        toast.info("🔄 Reconnecting to lobby…");
-        // Best-effort leave — ignore errors (stale lobby may no longer exist)
+        ue.info("🔄 Reconnecting to lobby…");
         try {
           await actor.leaveLobby(code);
         } catch {
-          // Also try leaving with no specific code by leaving any active lobby.
-          // If the backend tracks the caller's current lobby, this clears it.
         }
         const retry = await actor.joinLobby(code, username, avatarId);
         if (retry.__kind__ === "err") throw new Error(retry.err);
         return retry.ok;
       }
-
       if (result.__kind__ === "err") throw new Error(result.err);
       return result.ok;
     },
     onSuccess: (lobby) => {
       setLobbyState(lobby);
       navigate({ to: "/lobby/$code", params: { code: lobby.code } });
-      toast.success("🎮 Joined lobby!");
+      ue.success("🎮 Joined lobby!");
     },
-    onError: (err: Error) => {
-      toast.error(friendlyLobbyError(err.message));
-    },
+    onError: (err) => {
+      ue.error(friendlyLobbyError(err.message));
+    }
   });
 }
-
-export function useLeaveLobby() {
+function useLeaveLobby() {
   const { actor } = useActorInstance();
   const navigate = useNavigate();
   const { setLobbyState } = useGameStore();
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: async (code: LobbyCode) => {
+    mutationFn: async (code) => {
       if (!actor) throw new Error("Not connected");
       const result = await actor.leaveLobby(code);
       if (result.__kind__ === "err") throw new Error(result.err);
@@ -125,22 +95,20 @@ export function useLeaveLobby() {
       queryClient.removeQueries({ queryKey: ["lobby"] });
       navigate({ to: "/" });
     },
-    onError: (err: Error) => {
-      toast.error(friendlyLobbyError(err.message));
-    },
+    onError: (err) => {
+      ue.error(friendlyLobbyError(err.message));
+    }
   });
 }
-
-export function useSetReady() {
+function useSetReady() {
   const { actor } = useActorInstance();
   const queryClient = useQueryClient();
   const { setLobbyState } = useGameStore();
-
   return useMutation({
     mutationFn: async ({
       code,
-      ready,
-    }: { code: LobbyCode; ready: boolean }) => {
+      ready
+    }) => {
       if (!actor) throw new Error("Not connected");
       const result = await actor.setReady(code, ready);
       if (result.__kind__ === "err") throw new Error(result.err);
@@ -150,33 +118,37 @@ export function useSetReady() {
       setLobbyState(lobby);
       queryClient.invalidateQueries({ queryKey: ["lobby", lobby.code] });
     },
-    onError: (err: Error) => {
-      toast.error(friendlyLobbyError(err.message));
-    },
+    onError: (err) => {
+      ue.error(friendlyLobbyError(err.message));
+    }
   });
 }
-
-export function useStartGame() {
+function useStartGame() {
   const { actor } = useActorInstance();
   const navigate = useNavigate();
   const { setGameSession, setLobbyState } = useGameStore();
-
   return useMutation({
-    mutationFn: async (code: LobbyCode) => {
+    mutationFn: async (code) => {
       if (!actor) throw new Error("Not connected");
       const result = await actor.startGame(code);
       if (result.__kind__ === "err") throw new Error(result.err);
       return result.ok;
     },
     onSuccess: (session) => {
-      // setGameSession also clears lobbyState via the store (prevents desync)
       setGameSession(session);
       setLobbyState(null);
       navigate({ to: "/game/$gameId", params: { gameId: session.id } });
-      toast.success("🎲 Game started! Good luck!");
+      ue.success("🎲 Game started! Good luck!");
     },
-    onError: (err: Error) => {
-      toast.error(friendlyLobbyError(err.message));
-    },
+    onError: (err) => {
+      ue.error(friendlyLobbyError(err.message));
+    }
   });
 }
+export {
+  useJoinLobby as a,
+  useSetReady as b,
+  useStartGame as c,
+  useLeaveLobby as d,
+  useCreateLobby as u
+};

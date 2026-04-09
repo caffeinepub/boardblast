@@ -288,12 +288,21 @@ module {
       case null { #err(#lobbyNotFound) };
       case (?lobby) {
         if (lobby.status != #waiting) { return #err(#lobbyAlreadyStarted) };
-        if (lobby.players.size() >= lobby.maxPlayers) { return #err(#lobbyFull) };
         let alreadyIn = lobby.players.find(func p = p.id == playerId);
         switch (alreadyIn) {
-          case (?_) { return #err(#alreadyInLobby) };
+          case (?_) {
+            // Idempotent rejoin: player refreshed or reconnected — update their
+            // username/avatar and return the current lobby view without error.
+            lobby.players := lobby.players.map<Types.LobbyPlayer, Types.LobbyPlayer>(
+              func(p) {
+                if (p.id == playerId) { { p with username; avatarId } } else { p };
+              }
+            );
+            return #ok(toLobbyView(lobby));
+          };
           case null {};
         };
+        if (lobby.players.size() >= lobby.maxPlayers) { return #err(#lobbyFull) };
         let newPlayer : Types.LobbyPlayer = {
           id = playerId;
           username;

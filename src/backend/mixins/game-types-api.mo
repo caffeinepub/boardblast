@@ -113,11 +113,14 @@ mixin (
         if (lobby.status != #waiting) { return #err(#lobbyAlreadyStarted) };
         let readyCount = lobby.players.filter(func p = p.isReady).size();
         if (readyCount < 2) { return #err(#tooFewPlayers) };
-        lobby.status := #inProgress;
         let gameId = freshGameId();
-        lobby.gameId := ?gameId;
         let now = Time.now();
-        let view = GameLib.initGame(games, lobby, gameId, now);
+        // Snapshot players before deleting the lobby so initGame can use them
+        let lobbySnapshot : Types.Lobby = lobby;
+        // Delete the lobby immediately — prevents stale player entries from
+        // blocking future joinLobby calls with the same Principal.
+        lobbies.remove(code);
+        let view = GameLib.initGame(games, lobbySnapshot, gameId, now);
         #ok(view);
       };
     };
